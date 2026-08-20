@@ -19,6 +19,7 @@ func main(){
 
 	users := router.Group("/Users")
 	users.GET("/", c.GetAllUsers)
+	users.POST("/", c.AddUser)
 
 	port := os.Getenv("API_PORT")
 	router.Run("localhost:"+port)
