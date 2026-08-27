@@ -2,7 +2,7 @@ package service
 
 import (
 	m "example/artcentral-api/models"
-	"example/artcentral-api/utils"
+	utils "example/artcentral-api/utils"
 	"log"
 	"fmt"
 )
@@ -43,11 +43,17 @@ func FetchAllUsers() ([]m.Users, error){
 
 func AddUser(user m.Users) (int64, error){
 	db := utils.DB
+
+	password, err := utils.HashPassword(user.Password)
+	if err != nil {
+		return 0, fmt.Errorf("Erro ao criptografar senha: %e", err)
+	}
+
 	result, err := db.Exec(
 		"INSERT INTO users(name, email, password, birthDate, role) VALUES(?,?,?,?,?)",
 		user.Name, 
 		user.Email,
-		user.Password,
+		password,
 		user.BirthDate,
 		user.Role,
 	)
