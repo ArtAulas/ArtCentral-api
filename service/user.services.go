@@ -1,10 +1,11 @@
 package service
 
 import (
+	"database/sql"
 	m "example/artcentral-api/models"
 	utils "example/artcentral-api/utils"
-	"log"
 	"fmt"
+	"log"
 )
 
 func FetchAllUsers() ([]m.Users, error){
@@ -65,4 +66,27 @@ func AddUser(user m.Users) (int64, error){
 		return 0, fmt.Errorf("Erro ao inserir usuário: %e", err)
 	}
 	return id, nil
+}
+
+func FetchUserByEmail(email string) (m.Users, error){
+	db := utils.DB
+	var user m.Users
+
+	row := db.QueryRow("SELECT * FROM users WHERE email = ?", email)
+	if err := row.Scan(			
+			&user.ID, 
+			&user.Name, 
+			&user.Email,
+			&user.Password,
+			&user.BirthDate,
+			&user.Role,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		); err != nil {
+			if err == sql.ErrNoRows{
+				return user, fmt.Errorf("Sem usuário com email: %v", email)
+			}
+			return user, fmt.Errorf("Email: %v, Erro: %v", email, err)
+		}
+	return user, nil
 }

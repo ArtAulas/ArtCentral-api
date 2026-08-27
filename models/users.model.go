@@ -10,3 +10,8 @@ type Users struct {
 	CreatedAt string
 	UpdatedAt string
 }
+
+type Login struct {
+	Email string
+	Password string
+}
