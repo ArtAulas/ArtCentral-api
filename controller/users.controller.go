@@ -4,8 +4,8 @@ import (
 	m "example/artcentral-api/models"
 	service "example/artcentral-api/service"
 	"example/artcentral-api/utils"
-	"net/http"
 
+	"net/http"
 	"github.com/gin-gonic/gin"
 )
 
@@ -59,5 +59,10 @@ func Login(c *gin.Context){
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, gin.H{"User":user})
+	token, err := utils.CreateToken(user)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"erro":err})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"User":user, "Token": token})
 }
