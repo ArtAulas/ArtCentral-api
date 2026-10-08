@@ -1,37 +1,53 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"os"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 
 	c "example/artcentral-api/controller"
-	"example/artcentral-api/middleware"
 	"example/artcentral-api/utils"
-
-	"os"
 
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func main(){
+func main() {
 	utils.SetDB()
 
-	router := gin.Default()
+	e := echo.New()
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:5173"},
+		AllowMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodOptions,
+		},
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+			echo.HeaderAuthorization,
+		},
+	}))
+	e.Use(middleware.RequestLogger())
+	e.Use(middleware.Recover())
 
-	router.GET("/", middleware.AuthMiddleware(), getHome)
+	e.GET("/", getHome)
 
-	users := router.Group("/Users")
+	users := e.Group("/Users")
 	users.GET("/", c.GetAllUsers)
 	users.POST("/", c.AddUser)
 	users.POST("/login", c.Login)
 
 	port := os.Getenv("API_PORT")
-	router.Run("localhost:"+port)
+	if err := e.Start("localhost:" + port); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func getHome(c *gin.Context){
-	c.IndentedJSON(http.StatusOK, gin.H{"message": "Hello! This is my API!"})
-	user, _ := c.Get("user")
-	c.IndentedJSON(http.StatusOK, gin.H{"user": user})
+func getHome(c *echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]string{"message": "Hello! This is my API!"})
 }

@@ -1,14 +1,13 @@
 package service
 
 import (
-	"database/sql"
 	m "example/artcentral-api/models"
 	utils "example/artcentral-api/utils"
 	"fmt"
 	"log"
 )
 
-func FetchAllUsers() ([]m.Users, error){
+func FetchAllUsers() ([]m.Users, error) {
 	db := utils.DB
 	var users []m.Users
 
@@ -19,18 +18,18 @@ func FetchAllUsers() ([]m.Users, error){
 	}
 	defer rows.Close()
 
-	for rows.Next(){
+	for rows.Next() {
 		var user m.Users
 		if err := rows.Scan(
-				&user.ID, 
-				&user.Name, 
-				&user.Email,
-				&user.Password,
-				&user.BirthDate,
-				&user.Role,
-				&user.CreatedAt,
-				&user.UpdatedAt,
-			); err != nil {
+			&user.ID,
+			&user.Name,
+			&user.Email,
+			&user.Password,
+			&user.BirthDate,
+			&user.Role,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		); err != nil {
 			return nil, fmt.Errorf("Erro ao buscar usuários: %e", err)
 		}
 		users = append(users, user)
@@ -42,7 +41,7 @@ func FetchAllUsers() ([]m.Users, error){
 	return users, nil
 }
 
-func AddUser(user m.Users) (int64, error){
+func AddUser(user m.Users) (int64, error) {
 	db := utils.DB
 
 	password, err := utils.HashPassword(user.Password)
@@ -52,7 +51,7 @@ func AddUser(user m.Users) (int64, error){
 
 	result, err := db.Exec(
 		"INSERT INTO users(name, email, password, birthDate, role) VALUES(?,?,?,?,?)",
-		user.Name, 
+		user.Name,
 		user.Email,
 		password,
 		user.BirthDate,
@@ -68,25 +67,22 @@ func AddUser(user m.Users) (int64, error){
 	return id, nil
 }
 
-func FetchUserByEmail(email string) (m.Users, error){
+func FetchUserByEmail(email string) (m.Users, error) {
 	db := utils.DB
 	var user m.Users
 
 	row := db.QueryRow("SELECT * FROM users WHERE email = ?", email)
-	if err := row.Scan(			
-			&user.ID, 
-			&user.Name, 
-			&user.Email,
-			&user.Password,
-			&user.BirthDate,
-			&user.Role,
-			&user.CreatedAt,
-			&user.UpdatedAt,
-		); err != nil {
-			if err == sql.ErrNoRows{
-				return user, fmt.Errorf("Sem usuário com email: %v", email)
-			}
-			return user, fmt.Errorf("Email: %v, Erro: %v", email, err)
-		}
+	if err := row.Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.Password,
+		&user.BirthDate,
+		&user.Role,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	); err != nil {
+		return user, fmt.Errorf("buscar usuário por email: %w", err)
+	}
 	return user, nil
 }
